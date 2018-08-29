@@ -7,10 +7,14 @@ const getPlayersSelectedBy = (selectedPlayersByTurn, numPickers, player) => {
   return Object.keys(selectedPlayersByTurn).filter(turn => getPicker(numPickers, turn) === player).map(turn => selectedPlayersByTurn[turn])
 };
 
+// TODO: use a set, this isn't efficient
 const getRemainingPlayers = (allPlayers, selectedPlayersByTurn) => {
   const selected = Object.values(selectedPlayersByTurn);
-  const remaining = new Set(allPlayers);
-  selected.forEach(x => remaining.delete(x));
+  const remaining = Array.from(allPlayers);
+  selected.forEach(player => {
+    const remainingIndex = remaining.findIndex(x => x.name === player.name && x.position === player.position && x.team === player.team && x.byeWeek === player.byeWeek && x.value === player.value);
+    remaining.splice(remainingIndex, 1);
+  });
   return Array.from(remaining.values());
 }
 
@@ -44,6 +48,22 @@ class App extends Component {
     },
   };
 
+  componentDidMount() {
+    this.loadFromLocalStorage();
+  }
+
+  loadFromLocalStorage = () => {
+    const stateString = localStorage.getItem('appState');
+    if (stateString) {
+      const state = JSON.parse(stateString);
+      this.setState(() => state);
+    }
+  }
+
+  saveToLocalStorage = () => {
+    localStorage.setItem('appState', JSON.stringify(this.state))
+  }
+
   changeDisplayedPlayer = (e) => {
     const picker = parseInt(e.currentTarget.value, 10);
     this.setState(() => ({
@@ -64,7 +84,7 @@ class App extends Component {
     }
     this.setState(() => ({
       allPlayers: allPlayers.concat([player])
-    }));
+    }), this.saveToLocalStorage);
   }
 
   draftPlayer = (option) => {
@@ -76,7 +96,7 @@ class App extends Component {
         ...selectedPlayers,
         [turn]: player,
       }
-    }));
+    }), this.saveToLocalStorage);
   }
 
   setTurn = (e) => {
@@ -122,6 +142,18 @@ class App extends Component {
                   </li>
                 )
               })}
+            </ol>
+          </div>
+          <div>
+            Players selected:
+            <ol start="0">
+            {Object.values(selectedPlayers).map(player => {
+              return (
+                <li key={`${player.name}-${player.team}`}>
+                  <RenderPlayer player={player} />
+                </li>
+              )
+            })}
             </ol>
           </div>
         </div>
