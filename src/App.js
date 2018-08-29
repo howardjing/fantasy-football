@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import Select from 'react-select';
 import './App.css';
-import PLAYERS from './data';
+import PLAYERS from './alt-data';
+
+console.log("DATA", PLAYERS);
 
 const getPlayersSelectedBy = (selectedPlayersByTurn, numPickers, player) => {
   return Object.keys(selectedPlayersByTurn).filter(turn => getPicker(numPickers, turn) === player).map(turn => selectedPlayersByTurn[turn])
