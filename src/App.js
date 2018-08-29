@@ -126,7 +126,7 @@ class App extends Component {
           <div>Turn: <input type="number" value={turn} onChange={this.setTurn} />, Picker: {getPicker(numPickers, turn)}, Teams: {numPickers}</div>
           <div>
             <label>Choose player
-                <Select onChange={this.draftPlayer} options={players.map(x => ({ value: x, label: `${x.name}, ${x.position}, ${x.team}, ${x.byeWeek}`}))} />
+                <Select onChange={this.draftPlayer} options={players.map(x => ({ value: x, label: `${x.name}, ${x.position}, ${x.team}, ${x.value}`}))} />
             </label>
           </div>
           <div>
