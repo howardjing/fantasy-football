@@ -3,16 +3,12 @@ import Select from 'react-select';
 import './App.css';
 import PLAYERS from './data';
 
-const getAllSelectedPlayers = (selectedPlayersByTeam) => {
-  return Object.values(selectedPlayersByTeam).reduce((acc, val) => acc.concat(val), []);
+const getPlayersSelectedBy = (selectedPlayersByTurn, numPickers, player) => {
+  return Object.keys(selectedPlayersByTurn).filter(turn => getPicker(numPickers, turn) === player).map(turn => selectedPlayersByTurn[turn])
 };
 
-const getPlayersSelectedBy = (selectedPlayersByTeam, player) => {
-  return selectedPlayersByTeam[player] || [];
-};
-
-const getRemainingPlayers = (allPlayers, selectedPlayersByTeam) => {
-  const selected = getAllSelectedPlayers(selectedPlayersByTeam);
+const getRemainingPlayers = (allPlayers, selectedPlayersByTurn) => {
+  const selected = Object.values(selectedPlayersByTurn);
   const remaining = new Set(allPlayers);
   selected.forEach(x => remaining.delete(x));
   return Array.from(remaining.values());
@@ -30,7 +26,7 @@ const getPicker = (numPickers, turn) => {
 const RenderPlayer = ({ player }) => {
   return (
     <div>
-      {player.name}, {player.position}, {player.team}, {player.byeWeek}
+      {player.name}, {player.position}, {player.team}, {player.byeWeek} | value: {player.value}
     </div>
   )
 }
@@ -43,13 +39,13 @@ class App extends Component {
     turn: 0,
     displayedPicker: 3,
     allPlayers: PLAYERS,
+    // key value pair where key is turn, value is player
     selectedPlayers: {
     },
   };
 
   changeDisplayedPlayer = (e) => {
     const picker = parseInt(e.currentTarget.value, 10);
-    console.log("NO", picker)
     this.setState(() => ({
       displayedPicker: picker,
     }));
@@ -61,6 +57,7 @@ class App extends Component {
     const { allPlayers } = this.state;
     const player = {
       name: playerName,
+      value: 0,
       position: 'N/A',
       team: 'N/A',
       byeWeek: 'N/A',
@@ -71,16 +68,21 @@ class App extends Component {
   }
 
   draftPlayer = (option) => {
-    const { turn, numPickers, selectedPlayers } = this.state;
-    const picker = getPicker(numPickers, turn);
-    const picked = getPlayersSelectedBy(selectedPlayers, picker);
-    const updated = picked.concat([option.value]);
+    const { turn, selectedPlayers } = this.state;
+    const player = option.value;
     this.setState(() => ({
       turn: turn + 1,
       selectedPlayers: {
         ...selectedPlayers,
-        [picker]: updated
+        [turn]: player,
       }
+    }));
+  }
+
+  setTurn = (e) => {
+    const turn = parseInt(e.currentTarget.value, 10);
+    this.setState(() => ({
+      turn,
     }));
   }
 
@@ -99,7 +101,7 @@ class App extends Component {
           })}
         </ol>
         <div style={{ flex: 1 }}>
-          <div>Turn: {turn}, Picker: {getPicker(numPickers, turn)}, Teams: {numPickers}</div>
+          <div>Turn: <input type="number" value={turn} onChange={this.setTurn} />, Picker: {getPicker(numPickers, turn)}, Teams: {numPickers}</div>
           <div>
             <label>Choose player
                 <Select onChange={this.draftPlayer} options={players.map(x => ({ value: x, label: `${x.name}, ${x.position}, ${x.team}, ${x.byeWeek}`}))} />
@@ -113,7 +115,7 @@ class App extends Component {
           <div>
             <label>Players selected by <input type="number" value={displayedPicker} onChange={this.changeDisplayedPlayer} /></label>
             <ol>
-              {getPlayersSelectedBy(selectedPlayers, displayedPicker).map(player => {
+              {getPlayersSelectedBy(selectedPlayers, numPickers, displayedPicker).map(player => {
                 return (
                   <li key={`${player.name}-${player.team}`}>
                     <RenderPlayer player={player} />

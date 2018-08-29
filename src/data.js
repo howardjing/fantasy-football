@@ -1609,12 +1609,14 @@ const players = Array.from($table.children).map(p => {
   const position = p.children[2].textContent;
   const team = p.children[3].textContent;
   const byeWeek = p.children[4].textContent;
+  const value = 0;
 
   return {
     name,
     position,
     team,
-    byeWeek
+    byeWeek,
+    value,
   };
 });
 
