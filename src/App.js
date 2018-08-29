@@ -20,8 +20,13 @@ const getRemainingPlayers = (selectedPlayersByTeam) => {
   return Array.from(remaining.values());
 }
 
+// snake draft
 const getPicker = (numPickers, turn) => {
-  return turn %  numPickers;
+  return Math.floor(turn / numPickers) % 2 === 0 ?
+    // if even then ascending order
+    turn % numPickers :
+    // if odd then descending order
+    numPickers - 1 - turn % numPickers;
 }
 
 const RenderPlayer = ({ player }) => {
@@ -34,7 +39,7 @@ const RenderPlayer = ({ player }) => {
 
 class App extends Component {
   state = {
-    numPlayers: 16,
+    numPlayers: 15,
     turn: 0,
     displayedPlayer: 3,
     selectedPlayers: {
@@ -66,7 +71,7 @@ class App extends Component {
   }
 
   render() {
-    const { turn, selectedPlayers, displayedPlayer } = this.state;
+    const { turn, selectedPlayers, displayedPlayer, numPlayers } = this.state;
     const players = getRemainingPlayers(selectedPlayers);
     return (
       <div style={{ display: 'flex' }}>
@@ -80,7 +85,7 @@ class App extends Component {
           })}
         </ol>
         <div style={{ flex: 1 }}>
-          <div>Turn: {turn}</div>
+          <div>Turn: {turn}, Picker: {getPicker(numPlayers, turn)}, Teams: {numPlayers}</div>
           <div>
             <label>Choose player
                 <Select onChange={this.draftPlayer} options={players.map(x => ({ value: x, label: `${x.name}, ${x.position}, ${x.team}, ${x.byeWeek}`}))} />
